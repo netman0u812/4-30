@@ -1,0 +1,53 @@
+CI,IP_ADDRESS,LOCATION,HERITAGE,ROUTING_DOMAIN,LOC_SOURCE,ENVIRONMENT,MODEL,MANUFACTURER,LOC_CONFIDENCE,DEVICE_TYPE,PROTECTS
+PAZ1FTDPL1P,10.119.172.240,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Firepower Threat Defense (FTD),Scottsdale Shea DC FTD inline zone
+ptxsfmspl3p,10.114.255.43,Cloud - GCP US-East4 - CVS,CVS,Cloud-GCP,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,GCP US-East4 CVS cloud network
+rri2sf3dpl3p,10.18.126.254,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Cumberland RI 2100 datacenter network
+ptxsfmspl4p,10.114.255.44,Cloud - GCP US-East4 - CVS,CVS,Cloud-GCP,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,GCP US-East4 CVS cloud network
+rri1sf3dpl8p,10.18.106.87,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+rma1sf3dpl2p,10.134.107.80,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Cumberland RI 2100 app network
+rma1sf3dpl1p,10.134.107.79,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Cumberland RI 2100 app network
+rncsf3dpl1p,10.135.183.21,Raleigh NC - Omnicare,CVS,,HOSTNAME_INFERRED,PROD,,,LOW,Sourcefire 3D Sensor (IDS/IPS),Raleigh/Hickory NC Omnicare network
+rri1sf3dpl1p,10.18.4.111,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+rri1sf3dpl4p,10.18.106.83,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+rri1sf3dpl5p,10.18.106.84,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+rri1sf3dpl6p,10.18.106.85,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+rncsf3dpl2p,10.135.183.22,Raleigh NC - Omnicare,CVS,,HOSTNAME_INFERRED,PROD,,,LOW,Sourcefire 3D Sensor (IDS/IPS),Raleigh/Hickory NC Omnicare network
+rri1sf3dpl3p,10.18.106.82,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Woonsocket RI One datacenter network
+pmnsfmspl1p,10.38.53.142,Bloomington MN - Corporate,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Bloomington MN corporate network
+pnc1sf3dpl1p,10.87.246.35,High Point NC - Call Center,AETNA,Internal-HCB,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),High Point NC call center network
+pnc1sf3dpl2p,10.87.246.36,High Point NC - Call Center,AETNA,Internal-HCB,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),High Point NC call center network
+ppasfmspl6p,10.95.255.44,Pittsburgh PA - Corporate,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Pittsburgh PA corporate network
+pilsfmspl4p,10.106.255.44,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Illinois corporate network (Mount Prospect / Buffalo Grove)
+pil1sf3dpl1p,10.109.34.100,Buffalo Grove IL - Corporate,CVS,,HOSTNAME_INFERRED,PROD,,,MEDIUM,Sourcefire 3D Sensor (IDS/IPS),Buffalo Grove IL corporate network
+pil1sf3dpl2p,10.109.34.101,Buffalo Grove IL - Corporate,CVS,,HOSTNAME_INFERRED,PROD,,,MEDIUM,Sourcefire 3D Sensor (IDS/IPS),Buffalo Grove IL corporate network
+pilsfmspl3p,10.106.255.43,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Illinois corporate network (Mount Prospect / Buffalo Grove)
+pflsfmspl2p,10.38.50.143,Orlando FL - Specialty,CVS,Internal-PBM,HOSTNAME_INFERRED,PROD,,,MEDIUM,Sourcefire Management Station,Orlando FL Specialty Pharmacy network
+pmnsfmspl2p,10.38.53.143,Bloomington MN - Corporate,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Bloomington MN corporate network
+pazchsfrpl1p,10.149.255.43,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Replication,Scottsdale Shea DC chiller/facilities network
+pazchsfrpl2p,10.149.255.44,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Replication,Scottsdale Shea DC chiller/facilities network
+pazsfmspl1p,10.125.255.43,Phoenix AZ - Aetna DC,AETNA,Internal-HCB,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Scottsdale Shea DC Sourcefire management
+PAZ1FTDPL2P,10.119.172.241,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Firepower Threat Defense (FTD),Scottsdale Shea DC FTD inline zone
+paz1sf3dpl6p,10.10.106.36,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Scottsdale Shea DC datacenter network
+PAZ1FTDPL3P,10.119.172.242,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Firepower Threat Defense (FTD),Scottsdale Shea DC FTD inline zone
+PAZ1FTDPL4P,10.119.172.243,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Firepower Threat Defense (FTD),Scottsdale Shea DC FTD inline zone
+paz1sf3dpl11p,10.10.106.45,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Scottsdale Shea DC datacenter network
+paz1sf3dpl1p,10.93.34.45,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Scottsdale Shea DC datacenter network
+paz1sf3dpl2p,10.93.34.51,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Scottsdale Shea DC datacenter network
+paz1sfdc4kpl2p,10.93.34.63,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DC4000,Scottsdale Shea DC core switching
+paz1sfdcpl1p,10.93.34.46,Scottsdale AZ - Shea DC,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DC4000,Scottsdale Shea DC core switching
+pazsfmspl2p,10.125.255.44,Phoenix AZ - Aetna DC,AETNA,Internal-HCB,IPAM_LPM,PROD,,,HIGH,Sourcefire Management Station,Scottsdale Shea DC Sourcefire management
+pfl1sfrpl2p,10.151.255.44,Orlando FL - Call Center,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Replication,Orlando FL Specialty Pharmacy network
+pfl1sfrpl1p,10.151.255.43,Orlando FL - Call Center,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire Replication,Orlando FL Specialty Pharmacy network
+pflsfmspl1p,10.38.50.142,Orlando FL - Specialty,CVS,Internal-PBM,HOSTNAME_INFERRED,PROD,,,MEDIUM,Sourcefire Management Station,Orlando FL Specialty Pharmacy network
+rtl-dr-ips-dotcom-01,10.10.107.253,Watertown MA - Retail DR,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,IPS Sensor,Retail DR (Watertown MA) network
+rtl-dr-ips-dotcom-02,10.10.107.254,Watertown MA - Retail DR,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,IPS Sensor,Retail DR (Watertown MA) network
+rri2sf3dpl1p,10.18.114.188,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Cumberland RI 2100 datacenter network
+rri2sf3dpl2p,10.18.126.253,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire 3D Sensor (IDS/IPS),Cumberland RI 2100 datacenter network
+rri2sfdc4kpl1p,10.18.118.169,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DC4000,Cumberland RI 2100 datacenter network
+rri2sfdc4kpl2p,10.18.118.171,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DC4000,Cumberland RI 2100 datacenter network
+rri2sfdcpl1p,10.18.114.189,Woonsocket RI - RI One,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DC4000,Cumberland RI 2100 datacenter network
+rri2sfdmvpnpl1p,10.18.126.206,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DMVPN Sensor,Cumberland RI 2100 datacenter network
+rri2sfdmvpnpl2p,10.18.126.208,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire DMVPN Sensor,Cumberland RI 2100 datacenter network
+rri2sfhepl2p,10.18.126.204,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire HE Sensor,Cumberland RI 2100 datacenter network
+rri2sfsippl1p,10.18.126.210,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire SIP Sensor,Cumberland RI 2100 datacenter network
+rri2sfsippl2p,10.18.126.212,Cumberland RI - 2100 Highland,CVS,Internal-PBM,IPAM_LPM,PROD,,,HIGH,Sourcefire SIP Sensor,Cumberland RI 2100 datacenter network
