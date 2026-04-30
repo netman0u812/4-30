@@ -1,0 +1,56 @@
+Thanks for the detailed write-up, the reasoning holds up and the
+F5/Cloudflare downselect is defensible on the merits. Layer 7
+identity-and-governance versus Layer 3/4 tunnel brokerage is the right
+way to think about it, and it's consistent with what Zscaler and Cisco
+self-marked as adjunct in their own feature materials.
+
+Green light on notifying Zscaler and Cisco and moving into POC kickoff.
+Five refinements I'd like the team to fold in before M1:
+
+1. Cloudflare CR-01 approach in writing at M1. The single-org CA model
+is the biggest tech risk in the POC. I want Cloudflare's proposed
+isolation architecture documented before testing multi-account, separate
+access organizations per tenant, engineered CA hierarchy, whatever path
+they choose. M2 should test against a fixed target, not a moving one. If
+they can't put a concrete approach on paper at M1, that itself is what
+we have to know.
+
+2. Stress-test the dual-vendor production option, this one is
+operationally risky. The capability scores naturally split with F5
+strongest inbound (CR-01, CR-02 native), Cloudflare strongest outbound
+(CR-06, mature SWG). Before the POC locks into a single-platform
+outcome, I want the team to either confirm that single-platform is a
+hard constraint (lifecycle automation across two control planes,
+operational complexity, licensing) or run the dual-vendor comparison.
+The architecture may want both.
+
+3. Interim API spec checkpoint at M3. The September 30 portal depends
+entirely on July 30 API spec quality. If the spec only surfaces at M5,
+there's no time to course-correct and then we are going to have some
+issues. Add a draft API spec review at M3 (June 13) so we can catch gaps
+while the vendors can still respond.
+
+4. Define AI optionality concretely. I listed it in my original ask
+without scoping it, and the evaluation acknowledges it without pinning
+it down. Before either vendor builds expectations into their POC scope,
+the team should specify the use cases stuff like agentic policy
+authoring against the Terraform provider, anomaly detection on
+per-tenant egress audit, LLM-assisted tenant intake through the portal,
+etc. The answer shapes which API surfaces matter most.
+
+5. DLP integration architecture. The evaluation describes the TLS
+inspection toggle as the architectural insertion point for DLP, EDM, and
+document fingerprinting, but doesn't specify what plugs into it.
+Existing CVS DLP integration, vendor-native, or third-party inline? My
+original requirement on EDM and document fingerprinting needs an
+architectural home before POC scope is locked.
+
+On the Zscaler notification specifically be careful, very careful,  keep
+the language tightly scoped to 3PLZ architectural fit. Layer 7
+identity-and-governance requirements versus the platform's Layer 3/4
+tunnel brokerage strengths. No commentary on broader platform fit at
+CVS, don’t go there!   Zscaler is excellent at what it's built for and
+3PLZ isn't what it's built for. That's the whole story.  I don’t need
+them pissed off and dropping effort on the enterprise support stuff.
+
+Let me know when you have the M1 documentation back from both vendors.
