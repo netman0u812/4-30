@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA IDS Internet Egress — Policy Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1318;
+    --bg3: #141920;
+    --bg4: #1a2030;
+    --border: #1e2a38;
+    --border2: #253040;
+    --text: #c8d4e0;
+    --text2: #7a90a8;
+    --text3: #4a6070;
+    --accent: #00e5ff;
+    --accent2: #0099bb;
+    --red: #ff4455;
+    --red2: #cc2233;
+    --orange: #ff8833;
+    --yellow: #ffcc44;
+    --green: #33dd88;
+    --green2: #22aa66;
+    --purple: #aa66ff;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .report-header {
+    background: linear-gradient(135deg, #0a0c10 0%, #0d1520 50%, #0a1020 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,229,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .report-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 600px; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #e8f4ff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--text2);
+    font-family: var(--mono);
+  }
+  .header-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+  .meta-value { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+
+  /* LAYOUT */
+  .content { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* SECTION */
+  .section { margin: 40px 0; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    background: rgba(0,153,187,0.1);
+    border: 1px solid rgba(0,153,187,0.3);
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #d0e8f8;
+    letter-spacing: -0.01em;
+  }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.neutral::before { background: var(--text3); }
+
+  .stat-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .stat-value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+  .stat-card.yellow .stat-value { color: var(--yellow); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.blue .stat-value { color: var(--accent); }
+  .stat-card.neutral .stat-value { color: var(--text2); }
+  .stat-sub { font-size: 11px; color: var(--text2); }
+
+  /* FINDING CARDS */
+  .finding {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .finding-header:hover { background: var(--bg3); }
+  .severity-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .sev-critical { background: rgba(255,68,85,0.15); color: var(--red); border: 1px solid rgba(255,68,85,0.3); }
+  .sev-high { background: rgba(255,136,51,0.15); color: var(--orange); border: 1px solid rgba(255,136,51,0.3); }
+  .sev-medium { background: rgba(255,204,68,0.12); color: var(--yellow); border: 1px solid rgba(255,204,68,0.3); }
+  .sev-low { background: rgba(51,221,136,0.1); color: var(--green); border: 1px solid rgba(51,221,136,0.25); }
+  .sev-info { background: rgba(122,144,168,0.12); color: var(--text2); border: 1px solid var(--border2); }
+
+  .finding-title { font-size: 13px; font-weight: 500; color: #d0e4f4; flex: 1; }
+  .finding-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid var(--border2);
+    white-space: nowrap;
+  }
+  .finding-body { padding: 16px 18px; display: block; }
+  .finding-body p { font-size: 13px; color: var(--text2); margin-bottom: 10px; line-height: 1.6; }
+  .finding-body p:last-child { margin-bottom: 0; }
+
+  /* TABLES */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+  .data-table th {
+    text-align: left;
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg3);
+    font-weight: 500;
+  }
+  .data-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; }
+
+  /* BAR CHARTS */
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-family: var(--mono); font-size: 11px; color: var(--text2); width: 160px; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 20px; background: var(--bg3); border-radius: 2px; overflow: hidden; display: flex; }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; }
+  .bar-fill-block { background: linear-gradient(90deg, var(--green2), var(--green)); }
+  .bar-fill-alert { background: linear-gradient(90deg, var(--red2), var(--red)); }
+  .bar-pct { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.6); }
+  .bar-total { font-family: var(--mono); font-size: 10px; color: var(--text3); width: 50px; flex-shrink: 0; }
+
+  /* POSTURE RING */
+  .posture-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+  .posture-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  svg.ring { width: 200px; height: 200px; transform: rotate(-90deg); }
+  .ring-center { position: relative; }
+  .ring-legend { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* RECOMMENDATION CARDS */
+  .rec-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+  }
+  .rec-priority {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+  .pri-immediate { background: rgba(255,68,85,0.15); color: var(--red); border: 1px solid rgba(255,68,85,0.3); }
+  .pri-near { background: rgba(255,136,51,0.15); color: var(--orange); border: 1px solid rgba(255,136,51,0.3); }
+  .pri-standard { background: rgba(255,204,68,0.12); color: var(--yellow); border: 1px solid rgba(255,204,68,0.3); }
+  .pri-process { background: rgba(170,102,255,0.12); color: var(--purple); border: 1px solid rgba(170,102,255,0.3); }
+
+  .rec-body { flex: 1; }
+  .rec-title { font-size: 13px; font-weight: 600; color: #d0e4f4; margin-bottom: 6px; }
+  .rec-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .rec-detail { margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--text3); background: var(--bg3); padding: 8px 12px; border-radius: 2px; border-left: 2px solid var(--border2); }
+
+  /* SOC2 CALLOUT */
+  .soc2-callout {
+    background: rgba(255,68,85,0.05);
+    border: 1px solid rgba(255,68,85,0.2);
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin: 12px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .callout-text strong { color: var(--text); }
+
+  .info-callout {
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .info-callout strong { color: var(--accent); }
+
+  /* INLINE BADGE */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin: 0 2px;
+  }
+  .badge-red { background: rgba(255,68,85,0.12); color: var(--red); border: 1px solid rgba(255,68,85,0.25); }
+  .badge-orange { background: rgba(255,136,51,0.12); color: var(--orange); border: 1px solid rgba(255,136,51,0.25); }
+  .badge-green { background: rgba(51,221,136,0.1); color: var(--green); border: 1px solid rgba(51,221,136,0.2); }
+  .badge-blue { background: rgba(0,229,255,0.08); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+  .badge-neutral { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  /* FOOTER */
+  .report-footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  /* COLLAPSIBLE */
+  .collapsible { overflow: hidden; }
+  .collapsed { display: none; }
+  .chevron { margin-left: auto; font-size: 10px; color: var(--text3); transition: transform 0.2s; }
+  .expanded .chevron { transform: rotate(90deg); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } .posture-grid { grid-template-columns: 1fr; } }
+
+  /* CVE AGE */
+  .cve-bars { display: flex; align-items: flex-end; gap: 3px; height: 80px; margin: 12px 0; }
+  .cve-bar { flex: 1; background: var(--accent2); border-radius: 2px 2px 0 0; min-height: 2px; position: relative; opacity: 0.7; }
+  .cve-bar:hover { opacity: 1; }
+  .cve-bar.recent { background: var(--red); opacity: 0.85; }
+  .cve-year-labels { display: flex; gap: 3px; }
+  .cve-year-label { flex: 1; font-family: var(--mono); font-size: 8px; color: var(--text3); text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <div class="header-tag">CVS Health — Network Security Engineering // Threat Prevention</div>
+  <div class="header-title">PA IDS Internet Egress Policy — Deep Analysis</div>
+  <div class="header-sub">pa_ids_policy_inet_agress_04292026.csv · Ernst &amp; Young SOC 2 Cycle · FY2025</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Policy File</span><span class="meta-value">pa_ids_policy_inet_agress_04292026.csv</span></div>
+    <div class="meta-item"><span class="meta-label">Analysis Date</span><span class="meta-value">April 29, 2026</span></div>
+    <div class="meta-item"><span class="meta-label">Total Signatures</span><span class="meta-value">22,099</span></div>
+    <div class="meta-item"><span class="meta-label">Profile Name</span><span class="meta-value">Alert-All</span></div>
+    <div class="meta-item"><span class="meta-label">Traffic Direction</span><span class="meta-value">Internet Egress</span></div>
+    <div class="meta-item"><span class="meta-label">Packet Capture</span><span class="meta-value" style="color:var(--red)">DISABLED (all sigs)</span></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Executive Summary</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Signatures</div>
+        <div class="stat-value">22,099</div>
+        <div class="stat-sub">Vendor default actions applied</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Blocking Posture</div>
+        <div class="stat-value">74.3%</div>
+        <div class="stat-sub">16,419 sigs reset or drop</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Alert-Only (No Block)</div>
+        <div class="stat-value">24.1%</div>
+        <div class="stat-sub">5,332 sigs detect but not prevent</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Critical + Alert-Only</div>
+        <div class="stat-value">180</div>
+        <div class="stat-sub">Should be primary escalation target</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">High + Alert-Only</div>
+        <div class="stat-value">244</div>
+        <div class="stat-sub">424 combined crit/high not blocking</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Packet Capture</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">Disabled on ALL 22,099 signatures</div>
+      </div>
+    </div>
+
+    <div class="info-callout">
+      <strong>Context:</strong> This is an <strong>internet egress</strong> threat prevention profile, meaning it inspects traffic flowing from CVS Health internal hosts outbound to the internet. For egress flows, <em>server-side</em> threats represent malicious content being served back to CVS hosts from external servers (exploit kits, drive-by payloads, C2 callbacks, malicious file downloads). <em>Client-side</em> threats represent CVS hosts initiating known-malicious outbound patterns. Of the 180 critical alert-only signatures, <strong>171 (95%) are server-side</strong> — meaning CVS hosts are receiving potentially malicious content with no blocking response.
+    </div>
+  </div>
+
+  <!-- POSTURE ANALYSIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Overall Action Posture</span>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">reset-both</div>
+            <div class="bar-track"><div class="bar-fill bar-fill-block" style="width:39.4%"><span class="bar-pct">39.4%</span></div></div>
+            <div class="bar-total" style="color:var(--green)">8,714</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">reset-server</div>
+            <div class="bar-track"><div class="bar-fill bar-fill-block" style="width:30.6%"><span class="bar-pct">30.6%</span></div></div>
+            <div class="bar-total" style="color:var(--green)">6,761</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">alert (no block)</div>
+            <div class="bar-track"><div class="bar-fill bar-fill-alert" style="width:24.1%"><span class="bar-pct">24.1%</span></div></div>
+            <div class="bar-total" style="color:var(--red)">5,332</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">reset-client</div>
+            <div class="bar-track"><div class="bar-fill bar-fill-block" style="width:4.2%"><span class="bar-pct">4.2%</span></div></div>
+            <div class="bar-total" style="color:var(--green)">926</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">allow</div>
+            <div class="bar-track"><div class="bar-fill" style="width:1.6%;background:var(--yellow)"><span class="bar-pct">1.6%</span></div></div>
+            <div class="bar-total" style="color:var(--yellow)">348</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">drop (silent)</div>
+            <div class="bar-track"><div class="bar-fill" style="width:0.08%;background:var(--text3)"></div></div>
+            <div class="bar-total" style="color:var(--text3)">18</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <table class="data-table" style="font-size:12px">
+          <thead><tr><th>Severity</th><th>Total</th><th>Blocking</th><th>Alert-Only</th><th>Allow</th></tr></thead>
+          <tbody>
+            <tr><td><span class="severity-badge sev-critical">Critical</span></td><td>6,489</td><td style="color:var(--green)">6,309 (97.2%)</td><td style="color:var(--red)">180 (2.8%)</td><td>0</td></tr>
+            <tr><td><span class="severity-badge sev-high">High</span></td><td>9,845</td><td style="color:var(--green)">9,600 (97.5%)</td><td style="color:var(--red)">244 (2.5%)</td><td>1</td></tr>
+            <tr><td><span class="severity-badge sev-medium">Medium</span></td><td>3,825</td><td style="color:var(--yellow)">509 (13.3%)</td><td style="color:var(--red)">3,315 (86.7%)</td><td>1</td></tr>
+            <tr><td><span class="severity-badge sev-low">Low</span></td><td>552</td><td style="color:var(--green)">1 (0.2%)</td><td style="color:var(--red)">547 (99.1%)</td><td>4</td></tr>
+            <tr><td><span class="severity-badge sev-info">Informational</span></td><td>1,388</td><td>0</td><td>1,046 (75.4%)</td><td style="color:var(--yellow)">342 (24.6%)</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--mono)">Medium severity has 86.7% alert-only — the largest absolute alert-only population (3,315 sigs) driven primarily by code-execution, info-leak, and overflow categories.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY ANALYSIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Category Blocking Posture</span>
+    </div>
+
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">webshell</div>
+        <div class="bar-track"><div class="bar-fill bar-fill-block" style="width:100%"><span class="bar-pct">100%</span></div></div>
+        <div class="bar-total" style="color:var(--text3)">3</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">exploit-kit</div>
+        <div class="bar-track"><div class="bar-fill bar-fill-block" style="width:98.1%"><span class="bar-pct">98.1%</span></div></div>
+        <div class="bar-total" style="color:var(--text3)">259</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">code-execution</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:84.1%"><span class="bar-pct">84.1%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:15.7%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">13,430</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">overflow</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:84.7%"><span class="bar-pct">84.7%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:15.2%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">2,885</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">sql-injection</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:77.2%"><span class="bar-pct">77.2%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:22.8%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">845</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">phishing</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:51.9%"><span class="bar-pct">51.9%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:48.1%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">27</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">dos</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:59.9%"><span class="bar-pct">59.9%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:37%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">1,189</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">info-leak</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:52.9%"><span class="bar-pct">52.9%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:43.7%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">1,905</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">code-obfuscation</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:12.5%"><span class="bar-pct">12.5%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:34.4%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">32</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">hacktool</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:27.8%"><span class="bar-pct">27.8%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:72.2%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">18</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">brute-force</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:4.7%"><span class="bar-pct">4.7%</span></div>
+          <div class="bar-fill bar-fill-alert" style="width:66.7%"></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">171</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">protocol-anomaly</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:0.6%"></div>
+          <div class="bar-fill bar-fill-alert" style="width:86.1%"><span class="bar-pct">86.1%</span></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">158</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label" style="color:var(--red)">insecure-credentials</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-block" style="width:0.9%"></div>
+          <div class="bar-fill bar-fill-alert" style="width:98.9%"><span class="bar-pct" style="color:var(--red)">98.9%</span></div>
+        </div>
+        <div class="bar-total" style="color:var(--text3)">1,034</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:12px;font-size:11px;font-family:var(--mono)">
+      <span style="display:flex;align-items:center;gap:6px;color:var(--text3)"><span style="width:12px;height:10px;background:var(--green);border-radius:1px;display:inline-block"></span>Blocking (reset/drop)</span>
+      <span style="display:flex;align-items:center;gap:6px;color:var(--text3)"><span style="width:12px;height:10px;background:var(--red);border-radius:1px;display:inline-block"></span>Alert-only (no block)</span>
+    </div>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Key Findings</span>
+    </div>
+
+    <!-- F1 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-critical">Critical</span>
+        <span class="finding-title">Finding 1 — 180 Critical Signatures Not Blocking (95% Server-Side)</span>
+        <span class="finding-count">180 sigs · 85 code-execution · 40 brute-force</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>180 critical severity signatures are configured as alert-only, meaning they generate telemetry but take no preventive action. Of these, <strong>171 (95%) target server-side traffic</strong> — threats served by external internet servers back to CVS hosts. This is particularly consequential on egress traffic where CVS hosts are the recipients.</p>
+        <p><strong>Category breakdown:</strong> code-execution (85), brute-force (40), overflow (20), sql-injection (20), info-leak (12), dos (3).</p>
+        <p>Notable critical alert-only signatures include current-year threats: <span class="badge badge-red">CVE-2025-33070</span> Microsoft Windows RCE, <span class="badge badge-red">CVE-2025-24045</span> Windows RDS RCE, <span class="badge badge-red">CVE-2025-50177</span> MSMQ RCE, and <span class="badge badge-red">CVE-2025-4660</span> Windows SecureConnector RCE — all 2025 CVEs that remain detect-only.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Sig ID</th><th>Threat Name</th><th>Category</th><th>CVE</th><th>Host</th></tr></thead>
+            <tbody>
+              <tr><td>40172</td><td>Microsoft Windows Remote Code Execution</td><td>code-execution</td><td>CVE-2025-33070</td><td>server</td></tr>
+              <tr><td>96029</td><td>Windows Remote Desktop Services RCE</td><td>code-execution</td><td>CVE-2025-24045</td><td>server</td></tr>
+              <tr><td>96517</td><td>Microsoft Message Queuing RCE</td><td>code-execution</td><td>CVE-2025-50177</td><td>server</td></tr>
+              <tr><td>96514</td><td>Windows SecureConnector RCE</td><td>code-execution</td><td>CVE-2025-4660</td><td>server</td></tr>
+              <tr><td>96579</td><td>Microsoft Windows NTLM EoP</td><td>code-execution</td><td>CVE-2025-54918</td><td>server</td></tr>
+              <tr><td>92571</td><td>Microsoft NFS Remote Code Execution</td><td>code-execution</td><td>CVE-2022-26937</td><td>server</td></tr>
+              <tr><td>93004</td><td>Redis Remote Code Execution</td><td>code-execution</td><td>CVE-2022-0543</td><td>server</td></tr>
+              <tr><td>94162</td><td>Rockwell Automation Code Execution/DoS</td><td>code-execution</td><td>CVE-2023-3595/3596</td><td>server</td></tr>
+              <tr><td>93963</td><td>Oracle Java Code Execution</td><td>code-execution</td><td>CVE-2016-3427</td><td>server</td></tr>
+              <tr><td>57561</td><td>Shellshock Bash RCE</td><td>code-execution</td><td>CVE-2014-6271/7169</td><td>server</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="soc2-callout">
+          <span class="callout-icon">⚠</span>
+          <span class="callout-text"><strong>SOC 2 Relevance (MWDC-013.1):</strong> The EY-tested control states IDS devices monitor traffic and alerts are "reviewed by the SOC." For critical sigs, alert-only posture places 100% of the defensive burden on SOC triage speed and response time. Given the RMAN backup notification failure (PBM-083) and PAR completeness issues throughout the same audit period, assuming perfect SOC response is an unvalidated compensating control assumption.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- F2 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-high">High</span>
+        <span class="finding-title">Finding 2 — 244 High Severity Signatures Alert-Only</span>
+        <span class="finding-count">244 sigs · 82 code-execution · 49 brute-force · 44 dos</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>244 high severity signatures are alert-only. Category breakdown: code-execution (82), brute-force (49), dos (44), overflow (36), info-leak (27), sql-injection (6).</p>
+        <p>Of the 244, <strong>210 (86%) are server-side</strong> threats. Notable high + alert-only with 2024-2025 CVEs: <span class="badge badge-orange">CVE-2024-6387</span> (RegreSSHion SSH authentication brute force), <span class="badge badge-orange">CVE-2024-21307</span> (Microsoft RDP Client RCE), <span class="badge badge-orange">CVE-2025-27533</span> (Apache ActiveMQ DoS), <span class="badge badge-orange">CVE-2024-49112</span> (Windows LDAP RCE — critical severity, alert-only).</p>
+        <p>RegreSSHion (CVE-2024-6387) is particularly notable — it was a widely exploited SSH RCE vulnerability in mid-2024. Its associated signature being alert-only rather than blocking on an egress profile means outbound exploitation attempts to internet SSH servers would be detected but not prevented.</p>
+      </div>
+    </div>
+
+    <!-- F3 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-critical">Critical</span>
+        <span class="finding-title">Finding 3 — Insecure-Credentials Category: 98.9% Alert-Only (1,023 of 1,034)</span>
+        <span class="finding-count">1,034 total · 9 blocking · 1,023 alert-only</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>The insecure-credentials category has <strong>effectively no blocking posture</strong>. 1,023 of 1,034 signatures (98.9%) are alert-only. Only 9 signatures block, all of which are authentication bypass vulnerabilities (GitLab default credentials, Atlassian Confluence auth bypass, Cisco Smart Licensing static credential, Apache HugeGraph auth bypass, etc.).</p>
+        <p>The 1,023 alert-only signatures in this category cover hardcoded credentials, default password usage, plaintext credential transmission, weak authentication protocols, and credential stuffing detection. On an internet egress profile this means:</p>
+        <p>→ CVS hosts transmitting credentials in cleartext outbound — detected, not blocked<br>
+        → CVS hosts using default or hardcoded credentials to access external services — detected, not blocked<br>
+        → Outbound credential theft exfiltration patterns — detected, not blocked</p>
+        <div class="soc2-callout">
+          <span class="callout-icon">⚠</span>
+          <span class="callout-text"><strong>SOC 2 Relevance:</strong> The PBM SOC 2 audit identified credential/authentication issues in 4 separate findings (PBM-037.1, PBM-037.2, PBM-041, PBM-042). Having the IDS credential-detection layer also non-blocking compounds exposure in a credential risk landscape that is already audit-flagged.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- F4 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-critical">Critical</span>
+        <span class="finding-title">Finding 4 — Packet Capture Disabled on All 22,099 Signatures</span>
+        <span class="finding-count">100% of signatures · Zero forensic artifact capture</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>Every signature in this policy — without exception — has packet capture set to <strong>disable</strong>. This means the IDS platform generates no packet-level forensic artifact when any signature fires, regardless of severity.</p>
+        <p><strong>Operational impact:</strong> When a critical code-execution signature fires, the SOC receives an alert with metadata (signature ID, source/destination IP, timestamp, protocol) but no packet payload to reconstruct what actually occurred. Incident investigators cannot determine whether an alert represents a true positive exploit attempt, a false positive, or a probe vs. a successful exploitation.</p>
+        <p><strong>Options PA supports:</strong>
+        <br>→ <em>single-packet</em>: captures only the triggering packet (low storage overhead, high value for triage)
+        <br>→ <em>extended</em>: captures additional context packets
+        <br>→ <em>disable</em>: current state
+        </p>
+        <p>At minimum, enabling single-packet capture for critical and high severity signatures would materially improve SOC investigation capability with minimal performance or storage impact.</p>
+        <div class="soc2-callout">
+          <span class="callout-icon">⚠</span>
+          <span class="callout-text"><strong>SOC 2 Relevance (MWDC-013.1):</strong> EY tested that "for a sample of medium, high, or critical severity alerts, an incident ticket was created to investigate and remediate the vulnerability." Without packet capture, those investigations are conducted on alert metadata alone. This is a defensible but weaker evidentiary position — and would be visible to an auditor reviewing incident investigation quality.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- F5 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-medium">Medium</span>
+        <span class="finding-title">Finding 5 — Protocol-Anomaly and Brute-Force Categories Nearly Entirely Alert-Only</span>
+        <span class="finding-count">protocol-anomaly: 86.1% alert-only · brute-force: 66.7% alert-only</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p><strong>Protocol-anomaly (158 sigs, 86.1% alert-only):</strong> These signatures detect deviations from protocol standards — malformed headers, unexpected session behaviors, evasion-indicative anomalies. Having 136 of 158 as alert-only means protocol-based evasion techniques are being logged but not blocked. This category is typically kept in alert mode during initial tuning to measure false positive rates, but should not remain there indefinitely on a production internet egress policy.</p>
+        <p><strong>Brute-force (171 sigs, 66.7% alert-only):</strong> 40 of the alert-only brute-force signatures are rated <em>critical</em> severity. This category includes SSH brute force (CVE-2024-6387 RegreSSHion), HTTP flooding, SCTP INIT floods, GTPv1/v2 floods, and credential stuffing patterns. Only 8 of 171 brute-force signatures actually block. The telecom protocol floods (GTP, S1AP, Diameter) in this category are likely safe to move to alert-only intentionally as they would not appear in CVS egress traffic, but the HTTP DoS and credential brute-force signatures represent a clear hardening opportunity.</p>
+      </div>
+    </div>
+
+    <!-- F6 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-medium">Medium</span>
+        <span class="finding-title">Finding 6 — 18 Legacy DROP Rules from 2002–2007 Era</span>
+        <span class="finding-count">18 sigs · All CVEs 2002–2007 · No recent coverage in drop action</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>The 18 signatures configured as silent drop (rather than reset) all cover vulnerabilities from 2002–2007: SQL Server 2000 (CVE-2002-0729), Windows DHCP (CVE-2004-0899, CVE-2006-2372), ISC DHCP (CVE-2004-0460), KAME IKE/racoon (CVE-2004-0607, CVE-2004-0164), Check Point VPN-1 (CVE-2004-0699), OpenBSD ISAKMP, Sun Solaris in.rwhod, Citrix Program Neighborhood, Samba mailslot (CVE-2007-6015), and macOS KeyChain (no CVE).</p>
+        <p>These are almost certainly remnants of manual policy customization from the pre-Aetna merger era, possibly predating the current platform. Drop vs. reset is a deliberate choice (drop is stealthier — no TCP RST is sent to the attacker), suggesting these were purpose-set, not defaults. However their presence raises the question: if these 2004-era DHCP and VPN vulnerabilities warranted explicit drop, why do 2025 critical RCEs only get alert?</p>
+        <p>These rules are low risk to retain but should be <strong>reviewed and documented</strong> — if the affected platforms no longer exist in the environment, retirement would clean up the policy and improve auditability.</p>
+      </div>
+    </div>
+
+    <!-- F7 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-low">Low</span>
+        <span class="finding-title">Finding 7 — 6 Non-Informational ALLOW Actions Require Documentation</span>
+        <span class="finding-count">1 high · 1 medium · 4 low/brute-force</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>348 signatures use <em>default (allow)</em>, of which 342 are informational severity (app-id-change category, all expected). The 6 non-informational allows require examination:</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Severity</th><th>CVE</th><th>Assessment</th></tr></thead>
+            <tbody>
+              <tr><td>36944</td><td>Galil RIO 47100 PLC DoS</td><td style="color:var(--orange)">high</td><td>CVE-2013-0699</td><td style="color:var(--yellow)">Likely intentional OT exception</td></tr>
+              <tr><td>31232</td><td>MS IE HTTPS Proxy Info Disclosure</td><td style="color:var(--yellow)">medium</td><td>CVE-2005-2830</td><td style="color:var(--text2)">Legacy — IE no longer in use; review for retirement</td></tr>
+              <tr><td>94441</td><td>HTTP2 RST_STREAM Detection</td><td style="color:var(--green)">low</td><td>none</td><td style="color:var(--text2)">Likely false positive mitigation</td></tr>
+              <tr><td>33436</td><td>MS ASP.Net Info Leak (brute-force)</td><td style="color:var(--green)">low</td><td>CVE-2010-3332</td><td style="color:var(--text2)">Ambiguous — same CVE rated critical elsewhere</td></tr>
+              <tr><td>33509</td><td>Microsoft SMB NamePipe Write Evasion</td><td style="color:var(--green)">low</td><td>none</td><td style="color:var(--yellow)">Evasion technique — should be reviewed</td></tr>
+              <tr><td>58442</td><td>Nuuo CMS Session Token Detection</td><td style="color:var(--green)">low</td><td>none</td><td style="color:var(--text2)">Likely false positive mitigation</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The Galil RIO PLC (CVE-2013-0699) allow is the most notable — this is an OT/ICS device and the allow action almost certainly reflects a deliberate exception to avoid disrupting operational technology communication. It should be formally documented as an approved exception. The SMB NamePipe Write Evasion allow is worth flagging — allowing an evasion technique signature, even at low severity, warrants explicit justification.</p>
+      </div>
+    </div>
+
+    <!-- F8 -->
+    <div class="finding">
+      <div class="finding-header" onclick="toggle(this)">
+        <span class="severity-badge sev-medium">Note</span>
+        <span class="finding-title">Finding 8 — 20.4% of Signatures Have No CVE Mapping (4,504 sigs)</span>
+        <span class="finding-count">4,504 sigs without CVE · behavior-based or vendor-proprietary</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="finding-body collapsed">
+        <p>4,504 signatures (20.4%) have no CVE associated. These represent behavior-based detections (protocol anomalies, generic shellcode patterns, traffic behaviors), vendor-proprietary signatures, or signatures covering vulnerabilities that were never formally assigned a CVE. This is expected and not inherently a gap — PA's threat intelligence includes significant non-CVE-mapped behavioral coverage.</p>
+        <p>However, for <strong>vulnerability management correlation</strong> (connecting IDS hits to the vulnerability management program), these signatures are invisible to CVE-based workflows. If your VM program uses CVE as the correlation key (Qualys, Tenable, etc.), any alert firing on a non-CVE signature cannot be automatically correlated to an asset vulnerability finding. This creates a blind spot in automated triage workflows.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Recommendations</span>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-immediate">Immediate</span>
+      <div class="rec-body">
+        <div class="rec-title">R1 — Harden Critical + High Server-Side Code-Execution to reset-server</div>
+        <div class="rec-desc">The 99 critical server-side code-execution and overflow signatures currently on alert should be moved to <em>reset-server</em> action. This is the lowest-disruption blocking action for server-to-client threats — it terminates the server-side connection without affecting other sessions. Given these are PA vendor defaults, none of these signatures were specifically placed in alert mode; they simply arrived that way and have never been reviewed.</div>
+        <div class="rec-detail">Target: 85 critical code-execution + 20 critical overflow (server-side) = 105 signatures<br>Action: default → reset-server override in threat prevention profile<br>Risk: Low false positive risk for code-execution and overflow categories — these signature types have tight pattern specificity<br>Prioritize 2025 CVEs first: 40172, 96029, 96517, 96514, 96579</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-immediate">Immediate</span>
+      <div class="rec-body">
+        <div class="rec-title">R2 — Enable Single-Packet Capture for Critical and High Severity Signatures</div>
+        <div class="rec-desc">Enable <em>single-packet</em> capture on all critical and high severity signatures (16,334 total). Single-packet capture has negligible performance impact on modern PA hardware and provides the SOC with the triggering packet payload for every high-severity alert. This directly strengthens the investigative basis for MWDC-013.1 and closes the forensic gap for the 180 critical + 244 high alert-only signatures.</div>
+        <div class="rec-detail">Implementation: Modify the "Alert-All" threat prevention profile — set packet-capture = single-packet for severity = critical and high<br>Storage estimate: Single packet typically 64–1500 bytes; at scale, minimal compared to full PCAP<br>No disruption to blocking posture — purely additive change</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-near">30 Days</span>
+      <div class="rec-body">
+        <div class="rec-title">R3 — Conduct Targeted Review of Insecure-Credentials Alert-Only Population</div>
+        <div class="rec-desc">The insecure-credentials category's near-total alert-only posture (1,023 of 1,034) needs a structured review. Not all 1,023 need to block — some credential detection signatures are inherently high false-positive on enterprise networks (e.g., legacy protocol negotiation that looks like cleartext creds). However, given the audit-flagged credential management weaknesses across the PBM and MWDC reports, having no blocking posture in this category is difficult to justify without explicit tuning evidence.</div>
+        <div class="rec-detail">Recommended approach:<br>
+1. Pull 90-day alert volume for this category from Splunk<br>
+2. Identify the top-20 firing signatures by event count<br>
+3. For each: determine if alert represents true positive, FP rate, and business justification for allow vs. block<br>
+4. Establish a documented exception register for any that must remain alert-only<br>
+5. Move those without a documented FP concern to reset-server</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-near">30 Days</span>
+      <div class="rec-body">
+        <div class="rec-title">R4 — Document and Formalize All ALLOW Action Exceptions</div>
+        <div class="rec-desc">The 6 non-informational allow-action signatures must be formally documented as approved exceptions with named owners, business justification, and review dates. The Galil RIO PLC exception in particular needs an OT asset owner attestation. The MS IE HTTPS Proxy (CVE-2005-2830) allow is almost certainly stale given IE's retirement and should be evaluated for removal. The SMB NamePipe Write Evasion allow needs explicit justification — allowing an evasion signature is a non-trivial decision.</div>
+        <div class="rec-detail">Output: Firewall/IDS exception register entry for each of the 6 non-informational allows<br>Fields: Sig ID, CVE, Business Justification, Risk Acceptance Owner, Annual Review Date<br>Ties to SOC 2 third-party risk and access governance control framework</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-standard">90 Days</span>
+      <div class="rec-body">
+        <div class="rec-title">R5 — Establish a Severity-Based Blocking Policy Baseline and Tuning Process</div>
+        <div class="rec-desc">The current profile relies entirely on PA vendor default actions. There is no documented CVS-owned policy decision about what action any severity tier should take. Establishing a formal policy baseline (e.g., "critical = block, high = block, medium = alert pending tuning, low/informational = alert") would transform this from an inherited vendor default into a managed security control with defined expectations.</div>
+        <div class="rec-detail">Baseline proposal (starting point for discussion):<br>
+• Critical (server-side): reset-server | Critical (client-side): reset-client<br>
+• High (server-side): reset-server | High (client-side): reset-client<br>
+• Medium: alert (30-day tuning window before promotion)<br>
+• Low: alert<br>
+• Informational: alert or allow<br>
+Exceptions: documented per R4 process<br>
+Ties to semiannual firewall rule review (MWDC-013.2) — same team, same governance cadence</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-standard">90 Days</span>
+      <div class="rec-body">
+        <div class="rec-title">R6 — Review Protocol-Anomaly and Brute-Force Alert-Only Populations</div>
+        <div class="rec-desc">Protocol-anomaly (86.1% alert-only) and brute-force (66.7% alert-only) categories both warrant structured reviews. For brute-force, the telecom flood signatures (GTP, S1AP, Diameter, SCTP) are intentionally alert-only on a corporate egress policy and can be formally documented as such. The HTTP DoS flooding signatures (Slowloris, Torshammer), credential brute-force (MySQL, WordPress, CirCarLife SCADA), and the RegreSSHion (CVE-2024-6387) signature should be evaluated for blocking.</div>
+        <div class="rec-detail">For protocol-anomaly: Pull 90-day firing history; categorize by FP rate<br>For brute-force: Segment telecom/OT signatures (legitimate alert-only) from credential/HTTP signatures (should block)<br>Target: Reduce brute-force alert-only rate from 66.7% to &lt;30%</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-standard">90 Days</span>
+      <div class="rec-body">
+        <div class="rec-title">R7 — Retire or Re-document the 18 Legacy DROP Rules (2002–2007)</div>
+        <div class="rec-desc">The 18 silent-drop signatures are all 15–24 years old. Validate whether the affected platforms (SQL Server 2000, KAME IKE/racoon, Sun Solaris in.rwhod, Citrix Program Neighborhood, Check Point VPN-1 pre-2005) still exist anywhere in the CVS estate. If the platforms are fully retired, these rules can be removed to reduce policy complexity. If any remain, document them formally as retained exceptions. Either outcome improves auditability.</div>
+        <div class="rec-detail">Cross-reference against ent_host_master for OS/platform inventory<br>Verify against CMDB (SNOW) for any active Sun Solaris, KAME IKE, or Check Point VPN-1 entries<br>SQL Server 2000 (CVE-2002-0729) almost certainly has no active instances — safe to retire</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-process">Process</span>
+      <div class="rec-body">
+        <div class="rec-title">R8 — Align IDS Policy Review to SOC 2 Semiannual Firewall Rule Review (MWDC-013.2)</div>
+        <div class="rec-desc">The MWDC-013.2 control deviation in the current audit cycle was a missed semiannual firewall rule review. The Internet Engineering team owns that review. The IDS threat prevention profile should be incorporated into the same governance cadence — ensuring that as new signatures are added by PA content updates, their default actions are reviewed against the CVS baseline policy (R5), and any new ALLOW or anomalous alert-only assignments are flagged for review. This positions the IDS policy review as part of an existing, EY-tested control rather than a standalone process.</div>
+        <div class="rec-detail">Integration point: Add IDS profile action distribution report to semiannual review package<br>Metrics to track: % blocking by severity, new sigs added since last review, ALLOW action count changes<br>Output: Signed-off review artifact for each of the two semiannual cycles<br>Owner: Network Security Engineering (already the MWDC-020.1 designated owner)</div>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <span class="rec-priority pri-process">Process</span>
+      <div class="rec-body">
+        <div class="rec-title">R9 — Establish CVE-to-Asset Correlation Workflow for Non-CVE Signatures</div>
+        <div class="rec-desc">The 4,504 signatures without CVE mappings create a gap in automated VM-to-IDS correlation. When these signatures fire, vulnerability management workflows (Qualys/Tenable) cannot automatically associate the alert with a known open finding on the asset. Establishing a supplemental lookup — mapping PA signature IDs to internal risk categories or platform tags — would allow the SOC to triage non-CVE alerts against the asset's known software stack rather than relying on generic categorization.</div>
+        <div class="rec-detail">Approach: Export PA signature metadata (ID, category, platform/technology tags)<br>Cross-reference against ent_host_master platform inventory<br>Build Splunk lookup enrichment table mapping non-CVE sig IDs to technology platform categories<br>Enables "this host runs Apache → this sig is Apache-related → elevated triage priority"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIORITY MATRIX -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Recommendation Priority Matrix</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" style="font-size:12px">
+        <thead>
+          <tr><th>#</th><th>Recommendation</th><th>Priority</th><th>Effort</th><th>Sigs Affected</th><th>SOC 2 Control</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>R1</td><td>Harden critical/high server-side code-exec to reset-server</td><td><span class="severity-badge sev-critical">Immediate</span></td><td>Low (profile change)</td><td>~105</td><td>MWDC-013.1</td></tr>
+          <tr><td>R2</td><td>Enable single-packet capture for crit/high</td><td><span class="severity-badge sev-critical">Immediate</span></td><td>Low (profile change)</td><td>16,334</td><td>MWDC-013.1</td></tr>
+          <tr><td>R3</td><td>Review insecure-credentials alert-only population</td><td><span class="severity-badge sev-high">30 Days</span></td><td>Medium (tuning analysis)</td><td>1,023</td><td>MWDC-051, PBM-037</td></tr>
+          <tr><td>R4</td><td>Document ALLOW exception register</td><td><span class="severity-badge sev-high">30 Days</span></td><td>Low (documentation)</td><td>6</td><td>MWDC-013.2</td></tr>
+          <tr><td>R5</td><td>Establish severity-based blocking baseline policy</td><td><span class="severity-badge sev-medium">90 Days</span></td><td>Medium (policy design)</td><td>All 22,099</td><td>MWDC-013.2</td></tr>
+          <tr><td>R6</td><td>Review protocol-anomaly and brute-force populations</td><td><span class="severity-badge sev-medium">90 Days</span></td><td>Medium (tuning analysis)</td><td>329</td><td>MWDC-013.1</td></tr>
+          <tr><td>R7</td><td>Retire/document 18 legacy DROP rules</td><td><span class="severity-badge sev-medium">90 Days</span></td><td>Low (inventory check)</td><td>18</td><td>MWDC-013.2</td></tr>
+          <tr><td>R8</td><td>Align IDS review to semiannual FW governance cycle</td><td><span class="severity-badge sev-info">Process</span></td><td>Low (process change)</td><td>N/A</td><td>MWDC-013.2</td></tr>
+          <tr><td>R9</td><td>CVE-to-asset correlation for non-CVE signatures</td><td><span class="severity-badge sev-info">Process</span></td><td>High (data pipeline)</td><td>4,504</td><td>MWDC-011</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="report-footer">
+  <span>CVS Health — Network Security Engineering // IDS/IDP</span>
+  <span>pa_ids_policy_inet_agress_04292026 · Analysis Date: 2026-04-29</span>
+  <span>CONFIDENTIAL — NOT FOR EXTERNAL DISTRIBUTION</span>
+</div>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', !isCollapsed);
+  header.classList.toggle('expanded', isCollapsed);
+}
+</script>
+</body>
+</html>
